@@ -1,12 +1,40 @@
-Data Definition Language (DDL): used to modify database objects. Some examples are: CREATE TABLE, ALTER TABLE, and DROP TABLE.
+Data Definition Language (DDL):
+```sql
+--used to modify database objects. Some examples are: 
+CREATE TABLE
+ALTER TABLE
+DROP TABLE
+```
+ 
 
-Data Manipulation Language (DML): used to manipulate the data stored in the database. Some examples are: INSERT, UPDATE, and DELETE.
+Data Manipulation Language (DML):
+```sql
+--used to manipulate the data stored in the database.
+INSERT
+UPDATE
+DELETE
+```
 
-Data Query Language (DQL): used to ask questions about the data stored in the database. The most commonly used SQL command is SELECT, and it falls in this category.
+Data Query Language (DQL):
 
-Data Control Language (DCL): used to manage database security and user's access to data. These commands fall into the realm of Database Administrators. Some examples are GRANT and REVOKE.
+```sql
+--used to ask questions about the data stored in the database
+SELECT
+```
 
-Transaction Control Commands: used for managing groups of statements that must execute as a unit or not execute at all. Examples are COMMIT and ROLLBACK.
+Data Control Language (DCL):
+```sql
+--used to manage database security and user's access to data. These commands fall into the realm of Database Administrators.
+GRANT
+REVOKE
+```
+
+Transaction Control Commands:
+```sql
+--used for managing groups of statements that must execute as a unit or not execute at all.
+COMMIT
+ROLLBACK
+```
 
 Query
 
@@ -98,4 +126,16 @@ Remove
 ```sql
 delete from Customers
 where CustomerName = 'Lambda School`;
+```
+Unique and counting
+
+```sql
+SELECT COUNT( DISTINCT City)
+FROM Customers
+```
+Length of value
+
+```sql
+SELECT * FROM Suppliers
+WHERE length(SupplierName)>=20
 ```
