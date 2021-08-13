@@ -2,3 +2,6 @@ npx gitignore node
 npm init -y
 npm i express shortid
 npx eslint --init
+
+npm i -D nodemon
+npm i -D morgan
