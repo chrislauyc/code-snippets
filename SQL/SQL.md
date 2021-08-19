@@ -139,3 +139,70 @@ Length of value
 SELECT * FROM Suppliers
 WHERE length(SupplierName)>=20
 ```
+
+Join
+```sql
+SELECT Categories.CategoryName
+FROM Products
+INNER JOIN Categories 
+ON Products.CategoryID=Categories.CategoryID
+WHERE CategoryName='Confections'
+```
+Another join example
+```sql
+select d.id, d.name, e.id, e.first_name, e.last_name, e.salary
+from employees as e
+join departments as d
+  on e.department_id = d.id
+order by d.name, e.last_name
+```
+
+```
+(INNER) JOIN: Returns records that have matching values in both tables
+
+LEFT (OUTER) JOIN: Returns all records from the left table, and the matched records from the right table
+
+RIGHT (OUTER) JOIN: Returns all records from the right table, and the matched records from the left table
+
+FULL (OUTER) JOIN: Returns all records when there is a match in either left or right table
+```
+
+How to do multiple joins? This seems to not do the job
+```sql
+SELECT * FROM Products
+INNER JOIN Suppliers
+ON Products.SupplierID = Suppliers.SupplierID
+INNER JOIN Categories
+ON Products.CategoryID = Categories.CategoryID;
+```
+
+Other useful Snippets
+```sql
+select * from shippers
+--delete from shippers where shipperid = 4
+--update shippers set phone = "whatever", shippername = "hi" where shipperid = 4
+--insert into shippers (shippername, phone) values ("Ye Olde Shipping", "(123) 456-7890")
+--select
+--	prod.categoryid,
+--  categoryname,
+--    count(prod.categoryid) Total,
+--    avg(price) "Average Price"
+--from products prod
+--join categories cat
+--	on prod.categoryid = cat.categoryid
+--group by prod.categoryid
+--order by "Average Price" desc
+--select * from products order by price desc limit 5
+--select orderid, customername from orders
+--join customers
+--on orders.customerid = customers.customerid
+--SELECT orderid, shippername FROM Orders ord
+--JOIN shippers ship
+--ON ord.shipperid = ship.shipperid
+--SELECT shipperid AS ID, shippername AS Name, phone AS Phone FROM Shippers
+--WHERE shipperid < 2 AND shippername like "Speedy%"
+--WHERE shipperid < 2 OR shipperid > 3
+--WHERE Name like "%Express%"
+--SELECT shipperid AS ID, shippername AS Name, phone AS Phone FROM SHIPPERS
+--WHERE ID = 1
+```
