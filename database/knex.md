@@ -6,7 +6,7 @@ npm install knex sqlite3
 knex init
 
 #(if not globally installed)
-npx knex init
+npx knex init  # <== just use this
 
 #Generate a new migration (named migration)
 knex migrate:make [migration-name]
@@ -32,6 +32,46 @@ knex seed:make 001-seedName
 #running a seed
 knex seed:run
 
+#create a seed file for knex-cleanup
+knex seed:make 00-cleanup
+
+
+```
+00-cleanup should look like this
+
+```js
+//This removes all tables (excluding the two tables that track migrations) in the correct order before any seed files run.
+
+//01-farms, 02-ranchers
+
+//there is a problem with truncate 02-ranchers before 01-farms
+
+const cleaner = require('knex-cleaner');
+
+exports.seed = function(knex) {
+  return cleaner.clean(knex, {
+    mode: 'truncate', // resets ids
+    ignoreTables: ['knex_migrations', 'knex_migrations_lock'], // don't empty migration tables
+  });
+};
+
+```
+cascading when deleting a record
+
+```js
+//deleting a record will also delete all referencing records
+// by default, if deleting ranchers record, the database will block it
+.createTable('ranchers', tbl => {
+    tbl.increments();
+    tbl.string('rancher_name', 128);
+    tbl.integer('farm_id')
+    .unsigned()
+    .notNullable()
+    .references('id')
+    .inTable('farms')
+    .onUpdate('CASCADE');
+    .onDelete('CASCADE')
+})
 ```
 
 The file content of knexfile.js will look like this:
@@ -54,7 +94,14 @@ module.exports = {
     },
     seeds: {
       directory: './data/seeds'
-    }
+    },
+    // needed when using foreign keys
+    pool: {
+    afterCreate: (conn, done) => {
+      // runs after a connection is made to the sqlite engine
+      conn.run('PRAGMA foreign_keys = ON', done); // turn on FK enforcement
+    },
+  },
 };
 ```
 
@@ -95,6 +142,46 @@ exports.down = function(knex, Promise) {
 };
 ```
 
+Another example of the migraiton file
+
+This includes a foregin key, with a one-to-many relationship
+
+```js
+
+//foreign key can only be created after the reference table.
+
+exports.up = function(knex, Promise) {
+  return knex.schema
+    .createTable('farms', tbl => {
+      tbl.increments();
+      tbl.string('farm_name', 128)
+        .notNullable();
+    })
+    // we can chain together createTable
+    .createTable('ranchers', tbl => {
+      tbl.increments();
+      tbl.string('rancher_name', 128);
+      tbl.integer('farm_id')
+        // forces integer to be positive
+        .unsigned()
+        .notNullable()
+        .references('id')
+        // this table must exist already
+        .inTable('farms')
+    })
+};
+
+// in the down funciton, the table with the foreign keys have to be dropped first
+
+exports.down = function(knex, Promise) {
+  // drop in the opposite order
+  return knex.schema
+    .dropTableIfExists('ranchers')
+    .dropTableIfExists('farms')
+};
+
+```
+
 Seed file should look like this
 
 ```js
@@ -111,6 +198,30 @@ exports.seed = function(knex, Promise) {
     });
 };
 ```
+This is with a many-to-many relationship
+
+```js
+.createTable('farm_animals', tbl => {
+  tbl.integer('farm_id')
+    .unsigned()
+    .notNullable()
+    .references('id')
+    // this table must exist already
+    .inTable('farms')
+  tbl.integer('animal_id')
+    .unsigned()
+    .notNullable()
+    .references('id')
+    // this table must exist already
+    .inTable('animals')
+
+  // the combination of the two keys becomes our primary key
+  // will enforce unique combinations of ids
+  tbl.primary(['farm_id', 'animal_id']);
+});
+```
+
+
 Join in Knex
 ```js
 db('employees as e')
