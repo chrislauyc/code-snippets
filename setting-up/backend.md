@@ -77,4 +77,12 @@ const environment = process.env.NODE_ENV || 'development'
 module.exports = knex(configs[environment])
 ```
 
-
+migration file
+```js
+export.up = function(knex){
+    return knex.schema.createTable("table_name",(table)=>{
+        //schema building functions
+        //
+    })
+}
+```
