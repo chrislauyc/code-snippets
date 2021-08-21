@@ -7,7 +7,7 @@ npm init -y #create package.json, etc.
 
 npx eslint --init #configure the linting. I am not sure what that does
 
-npm i -D nodemon morgan cross-env sqlite3 supertest #dev dependencies
+npm i -D nodemon morgan cross-env sqlite3 supertest jest #dev dependencies
 
 npm i express knex helmet dotenv #dependencies
 
@@ -29,8 +29,7 @@ module.exports = {
       filename: './data/database_file.db3',
     },
     // necessary when using sqlite3
-    useNullAsDefault: true
-  }
+    useNullAsDefault: true,
     // generates migration files in a data/migrations/ folder
     migrations: {
       directory: './data/migrations'
@@ -54,8 +53,8 @@ package.json
     "start": "node index.js",
     "server": "nodemon index.js",
     "resetdb": "knex migrate:rollback && knex migrate:latest && knex seed:run",
-    "up":"knex migrate:up",
-    "down":"knex migrate:down"
+    "migrate":"knex migrate:latest",
+    "rollback":"knex migrate:rollback"
   }
 ```
 
@@ -83,6 +82,16 @@ export.up = function(knex){
     return knex.schema.createTable("table_name",(table)=>{
         //schema building functions
         //
+        // some common ones:
+        // increments, text, integer, float, boolean, notNullable
+        // references('id'), inTable('farms')
+        // 
     })
+    .createTable("table2_name",(table)=>{
+        //createTable are chainable
+    })
+}
+export.down = function(knex){
+    return knex.schema.dropTableIfExists("table_name");
 }
 ```
