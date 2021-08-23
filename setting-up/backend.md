@@ -9,7 +9,7 @@ npx eslint --init #configure the linting. I am not sure what that does
 
 npm i -D nodemon morgan cross-env sqlite3 supertest jest #dev dependencies
 
-npm i express knex helmet dotenv #dependencies
+npm i express knex helmet dotenv knex-cleaner #dependencies
 
 npx knex init #creates knexfile.js
 ```
@@ -77,6 +77,12 @@ module.exports = knex(configs[environment])
 ```
 
 migration file
+
+```bash
+# making a migration file
+knex migrate:make <task name>
+```
+
 ```js
 export.up = function(knex){
     return knex.schema.createTable("table_name",(table)=>{
@@ -94,4 +100,22 @@ export.up = function(knex){
 export.down = function(knex){
     return knex.schema.dropTableIfExists("table_name");
 }
+```
+
+seed files
+
+```bash
+# creating seed files
+knex seed:make 00-cleanup
+knex seed:make 01-<tableName>
+```
+
+```js
+const express = require("express");
+
+const server = express();
+const router = require("path to router");
+server.use(express.json());
+server.use("/api/<path>",router);
+module.exports = server;
 ```
