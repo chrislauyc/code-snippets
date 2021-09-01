@@ -31,11 +31,7 @@ export const useForm=(initialData,errorHandling)=>{
         },{});
         setErrors(submitErrors);
         const isValid = Object.keys(submitErrors).reduce((acc,key)=>submitErrors[key]===''&&acc,true);
-        if(isValid){
-            // clear();
-            return true;
-        }
-        return false;
+        return isValid;
     }
     const setField=(key,value)=>{
         const errorMessage = errorHandling(key,value);
@@ -49,9 +45,9 @@ export const useForm=(initialData,errorHandling)=>{
         })
         return errorMessage;
     };
-    const clear=()=>{
+    const reset=()=>{
         setValues(initForm());
         setErrors(initErrors());
     }
-    return [values,errors,handleChange,handleSubmit];
+    return [values,errors,handleChange,handleSubmit,reset];
 };

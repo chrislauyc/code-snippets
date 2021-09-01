@@ -4,6 +4,13 @@ Data Definition Language (DDL):
 CREATE TABLE
 ALTER TABLE
 DROP TABLE
+
+create table markets(
+    id int,
+    location text,
+    name text
+  )
+
 ```
  
 
@@ -205,4 +212,40 @@ select * from shippers
 --WHERE Name like "%Express%"
 --SELECT shipperid AS ID, shippername AS Name, phone AS Phone FROM SHIPPERS
 --WHERE ID = 1
+```
+
+
+SELECT
+  o.orderid,
+  e.firstname || " " || e.lastname "Full Name",
+  o.orderdate
+from orders as o
+left join employees as e
+
+w3school playground
+```sql
+select
+	o.orderid,
+  e.firstname || " " || e.lastname "Full Name",
+  o.orderdate,
+  count(o.orderid) Sales
+from employees e
+left join orders o
+on o.employeeid = e.employeeid
+group by e.employeeid
+order by sales 
+```
+
+```sql
+select
+	od.orderid,
+    p.productname,
+    sum(od.quantity) "Total Sold",
+    p.unit,
+    p.price,
+    sum(p.price * od.quantity) Revenue
+from orderdetails od
+join products p
+	on od.productid = p.productid
+group by p.productname
 ```

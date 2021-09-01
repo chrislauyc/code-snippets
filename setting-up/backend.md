@@ -9,7 +9,11 @@ npx eslint --init #configure the linting. I am not sure what that does
 
 npm i -D nodemon morgan cross-env sqlite3 supertest jest #dev dependencies
 
-npm i express knex helmet dotenv knex-cleaner #dependencies
+npm i express knex helmet dotenv knex-cleaner express-session connect-session-knex bcriptjs client-sessions
+
+# connection-session-knex allows you to save cookie in database
+# bcriptjs encript and hash passwords
+#dependencies
 
 npx knex init #creates knexfile.js
 ```
@@ -118,4 +122,110 @@ const router = require("path to router");
 server.use(express.json());
 server.use("/api/<path>",router);
 module.exports = server;
+```
+
+authRouter.js
+
+```js
+const router = require("express").Router();
+const userModel = require("../users/users-model");
+const bcryptjs = require("bcryptjs"); //bcript do the salting
+const checkPayloadShape=(req,res,next)=>{
+    if(!req.body.username || !req.body.password){
+        res.status(401).json({message:"username and password required"});
+    }
+    else{
+        next();
+    }
+};
+const userMustNotExist=async(req,res,next)=>{
+    const users = await userModel.findBy({username:req.body.username});
+    if(users.length !== 0){
+        res.status(400).json({message:"user already exists"});
+    }
+    else{
+        next();
+    }
+};
+const userMustExist=async(req,res,next)=>{
+    const users = await userModel.findBy({username:req.body.username});
+    if(users.length === 0){
+        res.status(404).json({message:"user not found"});
+    }
+    else{
+        req.user = users[0];
+        next();
+    }
+};
+router.post("/register",checkPayloadShape,userMustNotExist,async(req,res,next)=>{
+    try{
+        req.body.password = bcryptjs.hashSync(req.body.password, 14); //run 2^14 times
+        const {username,password} = req.body;
+        const user = await userModel.add({username,password});
+        res.status(201).json(user);
+    }
+    catch(err){
+        next(err);
+    }
+
+});
+
+router.post("/login",checkPayloadShape,userMustExist,(req,res,next)=>{
+    try{
+        if(bcryptjs.compareSync(req.body.password, req.user.password)){
+            req.session.user = req.user;
+            res.status(200).json({message:"login successful"});
+        }
+        else{
+            res.status(403).json({message: "invalid credentials"});
+        }
+    }
+    catch(err){
+        next(err);
+    }
+});
+router.get("/logout",(req,res,next)=>{
+    if(req.session){
+        req.session.destroy(err=>{
+            if(err){
+                res.json("cant log out");
+            }
+            else{
+                res.json("you are logged out");
+            }
+        })
+    }
+    else{
+        res.json("no session found");
+    }
+});
+
+
+module.exports = router;
+```
+bcryptjs and express session setup on server
+
+```js
+const session = require("express-session");
+const KnexSessionStore = require("connect-session-knex")(session);
+const config = {
+  name:"sessionId",
+  secret: "keep it secret, keep it safe",
+  cookie:{
+    maxAge: 1000 * 60 * 60,
+    secure:false,
+    httpOnly: true
+  },
+  resave:false,
+  saveUnitialized:false,
+  store: new KnexSessionStore({
+    knex:require("../database/db-config.js"),
+    tablename:"sessions",
+    sidfieldname:"sid",
+    createTable:true,
+    clearInterval:1000 * 60 * 60
+  })
+}
+
+server.use(session(config));
 ```
