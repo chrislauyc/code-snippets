@@ -121,6 +121,13 @@ const server = express();
 const router = require("path to router");
 server.use(express.json());
 server.use("/api/<path>",router);
+
+server.use((err, req, res, next) => {
+    return res.status(err.status || 500).json({
+        message: err.message,
+        stack: err.stack,
+    })
+})
 module.exports = server;
 ```
 
@@ -217,7 +224,7 @@ const config = {
     httpOnly: true
   },
   resave:false,
-  saveUnitialized:false,
+  saveUninitialized:false,
   store: new KnexSessionStore({
     knex:require("../database/db-config.js"),
     tablename:"sessions",
