@@ -9,7 +9,9 @@ npx eslint --init #configure the linting. I am not sure what that does
 
 npm i -D nodemon morgan cross-env sqlite3 supertest jest #dev dependencies
 
-npm i express knex helmet dotenv knex-cleaner express-session connect-session-knex bcriptjs client-sessions
+npm i dotenv express knex helmet dotenv knex-cleaner bcryptjs jsonwebtoken express-validator
+
+connect-session-knex client-sessions express-session
 
 # connection-session-knex allows you to save cookie in database
 # bcriptjs encript and hash passwords
@@ -21,33 +23,57 @@ npx knex init #creates knexfile.js
 knexfile.js
 
 ```js
-// dev environment
-
-module.exports = {
-
-  development: {
-    // our DBMS driver
-    client: 'sqlite3',
-    // the location of our db
-    connection: {
-      filename: './data/database_file.db3',
-    },
-    // necessary when using sqlite3
-    useNullAsDefault: true,
-    // generates migration files in a data/migrations/ folder
-    migrations: {
-      directory: './data/migrations'
-    },
-    seeds: {
-      directory: './data/seeds'
-    },
-    // needed when using foreign keys
-    pool: {
+const sharedCofig = {
+  migrations:{
+    directory:"./data/migrations"
+  },
+  seeds:{
+    directory:"./data/seeds"
+  },
+}
+const sqliteConfig = {
+  client: 'sqlite3',
+  useNullAsDefault: true,
+  pool: {
     afterCreate: (conn, done) => {
       // runs after a connection is made to the sqlite engine
       conn.run('PRAGMA foreign_keys = ON', done); // turn on FK enforcement
+    }
+  }
+}
+module.exports = {
+
+  development: {
+    ...sharedCofig,
+    ...sqliteConfig,
+    connection: {
+      filename: './data/dev.db3'
     },
   },
+  testing:{
+    ...sharedCofig,
+    ...sqliteConfig,
+    connection:{
+      filename:"./data/testing.db3"
+    }
+  },
+
+  production: {
+    client: 'postgresql',
+    connection: {
+      database: 'my_db',
+      user:     'username',
+      password: 'password'
+    },
+    pool: {
+      min: 2,
+      max: 10
+    },
+    migrations: {
+      tableName: 'knex_migrations'
+    }
+  }
+
 };
 ```
 package.json
@@ -88,7 +114,7 @@ knex migrate:make <task name>
 ```
 
 ```js
-export.up = function(knex){
+exports.up = function(knex){
     return knex.schema.createTable("table_name",(table)=>{
         //schema building functions
         //
@@ -101,7 +127,7 @@ export.up = function(knex){
         //createTable are chainable
     })
 }
-export.down = function(knex){
+exports.down = function(knex){
     return knex.schema.dropTableIfExists("table_name");
 }
 ```

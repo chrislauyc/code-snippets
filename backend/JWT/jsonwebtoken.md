@@ -55,3 +55,17 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET || 'add a third table for many to many',
 };
 ```
+
+to verify
+
+```js
+jwt.verify(token,secret,(err,decoded)=>{
+  if(err){
+    return res.status(401).json({message:"token is bad: "+ err.message})
+  }
+  if(decoded){
+    req.decodedToken = decoded;
+    return next();
+  }
+});
+```
